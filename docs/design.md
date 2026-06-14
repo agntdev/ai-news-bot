@@ -1,93 +1,70 @@
 # AI News Bot - UX Specification Document
 
-## COMMAND TREE
+## COMMAND TREE  
+**None.**  
+The bot has no user-facing commands or interactive features. All functionality is autonomous, with no direct user interaction required. Configuration is handled via external setup (e.g., environment variables, admin APIs), not through Telegram commands.
 
-| Command        | Description                                                                 | Access Level |
-|----------------|-----------------------------------------------------------------------------|--------------|
-| `/start`       | Initialize bot configuration flow (channel ID setup)                        | Admin        |
-| `/setup`       | Re-enter configuration mode                                                 | Admin        |
-| `/sources`     | List/configure whitelisted news sources                                     | Admin        |
-| `/status`      | Show current bot configuration and operational status                     | Admin        |
-| `/restart`     | Restart monitoring process                                                  | Admin        |
-| `/help`        | Show available commands                                                   | All          |
+---
 
-## DIALOG STATE MACHINE
+## DIALOG STATE MACHINE  
+**Not applicable.**  
+The bot operates in a single autonomous state: **News Monitoring & Delivery**. It does not transition between states or require user input. All behavior is event-driven by external news source updates, not user commands.
 
-**States:**
-1. **Idle** (default state - autonomous news delivery)
-2. **Configuring Channel** (awaiting channel ID input)
-3. **Configuring Sources** (awaiting source selection)
-4. **Error Recovery** (handling delivery failures)
+---
 
-**Transitions:**
-- `/start` → Configuring Channel  
-- `/setup` → Configuring Channel  
-- `/sources` → Configuring Sources  
-- Valid channel ID input → Idle  
-- Invalid input → Error Recovery  
-- Successful delivery → Idle  
-- Failed delivery → Error Recovery  
+## INLINE-KEYBOARD LAYOUTS  
+**None.**  
+No inline keyboards or buttons are used. The bot does not prompt for user input or provide interactive menus.
 
-## INLINE-KEYBOARD LAYOUTS
+---
 
-### Configuration Menu (shown during setup)
-```
-[Configure Channel] [View Current Sources]
-[Restart Monitoring] [Check Status]
-```
+## MESSAGE COPY & TONE  
 
-### Source Selection Menu
-```
-[TechCrunch AI] [VentureBeat AI] [arXiv AI]
-[Add Custom Source] [Remove Source]
-```
-
-### Error Recovery Menu
-```
-[Retry Last Failed] [View Error Log]
-[Return to Idle] [Configure Sources]
-```
-
-## MESSAGE COPY & TONE
-
-**Startup Message:**
-> "I'm the AI News Bot! Let's set up your team channel first. Please share the Telegram channel ID where you want me to post updates."
-
-**News Delivery Format:**
+### **News Update Format**  
 > 📰 **New [NLP/Robotics] Development**  
 > _[Source Name] • [Relative Time]_  
-> "This paper introduces..." [Read more]([URL])
+> "This paper introduces..." [Read more]([URL])  
 
-**Error Messages:**
-- Channel Error:  
-  > "⚠️ I can't post to the configured channel. Please verify the channel ID or my permissions."
-- Duplicate Detection:  
-  > "🔄 Skipping duplicate article from [Source]."
-- Network Failure:  
-  > "❗ Failed to fetch updates from [Source]. Retrying in 5 minutes..."
+**Tone:**  
+- Professional and concise.  
+- Uses emojis (📰) and bold formatting for visual clarity.  
+- Neutral, factual language with no opinion or commentary.  
 
-**Tone:** Professional yet approachable, with clear visual hierarchy using emojis and formatting.
+### **System Messages**  
+- **Delivery Failure (Logged Internally):**  
+  > "❗ Failed to post update from [Source]. Retrying in 5 minutes..."  
+  *(Displayed in admin logs, not to users.)*  
 
-## EDGE CASES
+- **Duplicate Article Skipped:**  
+  > "🔄 Skipped duplicate article from [Source]."  
+  *(Logged internally; no user-facing message.)*  
+
+---
+
+## EDGE CASES  
 
 | Scenario                          | Handling                                                                 |
 |----------------------------------|--------------------------------------------------------------------------|
-| Invalid channel ID               | Prompt with "❌ Invalid channel ID. Please try again or check permissions." |
-| Missing source API access        | Fallback to web scraping with warning message                             |
-| Article without snippet          | Post title + URL only with "(No summary available)" note                 |
-| No new articles in polling cycle | No message sent; logs "ℹ️ No new articles found in this cycle"            |
-| Unknown commands                 | "❓ I don't handle that command. Use /help to see available options."      |
-| Missing configuration            | Redirect to configuration flow with "⚙️ Please configure me first"        |
+| Invalid channel ID in config     | Bot fails silently; logs error internally for admin review.              |
+| Network failure fetching news    | Retries every 5 minutes; logs error internally.                        |
+| Article lacks snippet or title   | Posts only available metadata (e.g., URL with "(No summary available)").|
+| No new articles in polling cycle | No message sent; logs "ℹ️ No new articles found in this cycle."        |
+| Unknown or invalid configuration | Bot skips invalid config entries; logs warning internally.              |
 
-## i18n REQUIREMENTS
+---
 
-**Translatable Strings:**
-- All user-facing messages (error messages, prompts, button labels)
-- News article categories ("NLP", "Robotics")
-- Time formatting (relative time expressions)
-- Source names (e.g., "TechCrunch AI")
+## i18n REQUIREMENTS  
 
-**Non-Translatable:**
-- Technical identifiers (command names)
-- Bot token and channel ID values
-- Article hashes and timestamps
+**Translatable Strings:**  
+- News update formatting (e.g., "New [NLP/Robotics] Development").  
+- Relative time expressions (e.g., "3 hours ago").  
+- Source names (e.g., "TechCrunch AI").  
+- Error messages (e.g., "Failed to post update").  
+
+**Non-Translatable:**  
+- Technical identifiers (e.g., article hashes, timestamps).  
+- Bot configuration parameters (e.g., channel ID, source URLs).  
+
+--- 
+
+**Note:** All user-facing text is limited to automated news updates and internal logging. No interactive elements or commands exist for end users.
